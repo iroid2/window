@@ -6,6 +6,7 @@ import { Search, Wifi, Volume2, Battery, ChevronUp } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import StartMenu from "./StartMenu";
 
+import Calculator from "./calculator";
 import Word from "./word";
 import Settings from "./settings";
 import ContextMenu from "./ContextMenu";
@@ -14,7 +15,6 @@ import { Button } from "@/components/ui/button";
 import FileManager from "./FileManager";
 import Chrome from "./Chrome";
 import VSCode from "./VSCode";
-import Calculator from "./calculator";
 
 interface DesktopFolder {
   id: string;
@@ -204,19 +204,23 @@ export default function Desktop() {
       />
 
       {/* Desktop Content */}
-      <div className="absolute inset-0 p-4 grid grid-cols-6 gap-4 overflow-auto">
+      <div className="absolute inset-0 p-4 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4 overflow-auto">
         {folders.map((folder) => (
           <div
             key={folder.id}
             className="flex flex-col items-center gap-2 p-2 hover:bg-white/10 rounded cursor-pointer group"
             onClick={(e) => e.stopPropagation()}
           >
-            <img src="/images/folder.png" alt="Folder" className="h-12 w-12" />
+            <img
+              src="/images/folder.png"
+              alt="Folder"
+              className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12"
+            />
             {editingFolderId === folder.id ? (
               <input
                 type="text"
                 value={folder.name}
-                className="bg-black/50 text-white px-2 py-1 rounded w-full text-center"
+                className="bg-black/50 text-white px-2 py-1 rounded w-full text-center text-xs sm:text-sm"
                 onChange={(e) =>
                   handleFolderNameChange(folder.id, e.target.value)
                 }
@@ -229,7 +233,7 @@ export default function Desktop() {
                 autoFocus
               />
             ) : (
-              <span className="text-sm text-white text-center px-2 py-1 rounded group-hover:bg-blue-500/30">
+              <span className="text-xs sm:text-sm text-white text-center px-2 py-1 rounded group-hover:bg-blue-500/30">
                 {folder.name}
               </span>
             )}
@@ -290,14 +294,6 @@ export default function Desktop() {
           onMinimize={handleMinimize}
         />
       )}
-      {openApp?.name === "settings" && (
-        <Settings
-          onClose={() => setOpenApp(null)}
-          isMaximized={openApp.isMaximized}
-          onMaximize={handleMaximize}
-          onMinimize={handleMinimize}
-        />
-      )}
 
       {/* Personalization Settings */}
       {openSettings && (
@@ -319,15 +315,15 @@ export default function Desktop() {
       )}
 
       {/* Taskbar */}
-      <div className="absolute bottom-0 left-0 right-0 h-12 bg-black/70 backdrop-blur-lg flex items-center justify-center px-2 text-white">
+      <div className="absolute bottom-0 left-0 right-0 h-10 sm:h-12 bg-black/70 backdrop-blur-lg flex items-center justify-center px-2 text-white">
         <button
           onClick={(e) => {
             e.stopPropagation();
             handleStartClick();
           }}
-          className="p-2 hover:bg-white/10 rounded-md transition-colors"
+          className="p-1 sm:p-2 hover:bg-white/10 rounded-md transition-colors"
         >
-          <Image src="/images/windows.png" alt="Start" width={24} height={24} />
+          <Image src="/images/windows.png" alt="Start" width={20} height={20} />
         </button>
 
         {/* Task bar icons */}
@@ -339,10 +335,10 @@ export default function Desktop() {
                 e.stopPropagation();
                 handleTaskbarIconClick(icon.action);
               }}
-              className="p-2 hover:bg-white/10 rounded-md transition-colors"
+              className="p-1 sm:p-2 hover:bg-white/10 rounded-md transition-colors"
             >
               {typeof icon.icon === "string" ? (
-                <Image src={icon.icon} alt={icon.name} width={20} height={20} />
+                <Image src={icon.icon} alt={icon.name} width={16} height={16} />
               ) : (
                 icon.icon
               )}
@@ -352,19 +348,19 @@ export default function Desktop() {
 
         {/* System Tray */}
         <div className="absolute right-2 flex items-center space-x-2">
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <ChevronUp className="w-4 h-4" />
+          <Button variant="ghost" size="icon" className="h-6 w-6 sm:h-8 sm:w-8">
+            <ChevronUp className="w-3 h-3 sm:w-4 sm:h-4" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <Wifi className="w-4 h-4" />
+          <Button variant="ghost" size="icon" className="h-6 w-6 sm:h-8 sm:w-8">
+            <Wifi className="w-3 h-3 sm:w-4 sm:h-4" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <Volume2 className="w-4 h-4" />
+          <Button variant="ghost" size="icon" className="h-6 w-6 sm:h-8 sm:w-8">
+            <Volume2 className="w-3 h-3 sm:w-4 sm:h-4" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <Battery className="w-4 h-4" />
+          <Button variant="ghost" size="icon" className="h-6 w-6 sm:h-8 sm:w-8">
+            <Battery className="w-3 h-3 sm:w-4 sm:h-4" />
           </Button>
-          <div className="px-3 py-1 hover:bg-white/10 rounded-md text-xs">
+          <div className="px-2 py-1 hover:bg-white/10 rounded-md text-xs">
             <div>
               {currentTime.toLocaleTimeString("en-US", {
                 hour: "numeric",
@@ -372,7 +368,7 @@ export default function Desktop() {
                 hour12: true,
               })}
             </div>
-            <div>
+            <div className="hidden sm:block">
               {currentTime.toLocaleDateString("en-US", {
                 month: "numeric",
                 day: "numeric",

@@ -24,6 +24,7 @@ export default function CreateAccount() {
       return;
     }
     // In a real app, we would make an API call here
+    // @ts-ignore
     login({ id: "1", username: formData.username, email: formData.email });
   };
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuthStore } from "../store/authStore";
 import LockScreen from "@/components/front/LockScreen";
 import CreateAccount from "@/components/front/CreateAccount";
@@ -10,7 +10,20 @@ import Desktop from "@/components/front/Desktop";
 export default function Home() {
   const [isLocked, setIsLocked] = useState(true);
   const [showCreateAccount, setShowCreateAccount] = useState(false);
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const { isAuthenticated, checkSession, logout } = useAuthStore();
+
+  useEffect(() => {
+    const validSession = checkSession();
+    setIsLocked(!validSession);
+
+    const intervalId = setInterval(() => {
+      if (!checkSession()) {
+        setIsLocked(true);
+      }
+    }, 60000); // Check every minute
+
+    return () => clearInterval(intervalId);
+  }, [checkSession]);
 
   if (isLocked) {
     return <LockScreen onUnlock={() => setIsLocked(false)} />;
@@ -19,11 +32,11 @@ export default function Home() {
   if (!isAuthenticated) {
     if (showCreateAccount) {
       return (
-        <div>
+        <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900">
           <CreateAccount />
           <button
             onClick={() => setShowCreateAccount(false)}
-            className="absolute top-4 right-4 text-white/70 hover:text-white"
+            className="mt-4 text-white/70 hover:text-white"
           >
             Back to Login
           </button>
@@ -31,11 +44,11 @@ export default function Home() {
       );
     }
     return (
-      <div>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900">
         <LoginScreen />
         <button
           onClick={() => setShowCreateAccount(true)}
-          className="absolute bottom-4 right-4 text-white/70 hover:text-white"
+          className="mt-4 text-white/70 hover:text-white"
         >
           Create Account
         </button>

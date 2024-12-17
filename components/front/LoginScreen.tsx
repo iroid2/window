@@ -6,6 +6,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Fingerprint, Key, Grid3X3, SmilePlus, Lock } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 
+interface User {
+  id: string;
+  username: string;
+  email: string;
+}
+
 export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -14,6 +20,7 @@ export default function LoginScreen() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Allow any password to login
+    // @ts-ignore
     login({ id: "1", username: "iroid", email: "iroid@example.com" });
   };
 
