@@ -1,42 +1,117 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
-import { Search, Wifi, Volume2, Battery, ChevronUp } from "lucide-react";
-import { useAuthStore } from "@/store/authStore";
-import StartMenu from "./StartMenu";
 
-import Calculator from "./calculator";
-import Word from "./word";
-import Settings from "./settings";
-import ContextMenu from "./ContextMenu";
-import PersonalizationSettings from "./PersonalizationSettings";
-import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import StartMenu from "./StartMenu";
 import FileManager from "./FileManager";
 import Chrome from "./Chrome";
 import VSCode from "./VSCode";
 
-interface DesktopFolder {
+import ContextMenu from "./ContextMenu";
+import { Search, Wifi, Volume2, Battery, ChevronUp } from "lucide-react";
+import { useAuthStore } from "@/store/authStore";
+import Word from "./word";
+
+interface DesktopItem {
   id: string;
   name: string;
+  icon: string;
+  type: "folder" | "file" | "image" | "recyclebin";
+  path?: string;
   createdAt: Date;
 }
+
+const defaultItems: DesktopItem[] = [
+  {
+    id: "documents",
+    name: "Documents",
+    icon: "/images/folder.png",
+    type: "folder",
+    path: "C:\\Users\\User\\Documents",
+    createdAt: new Date(),
+  },
+  {
+    id: "downloads",
+    name: "Downloads",
+    icon: "/images/folder.png",
+    type: "folder",
+    path: "C:\\Users\\User\\Downloads",
+    createdAt: new Date(),
+  },
+  {
+    id: "pictures",
+    name: "Pictures",
+    icon: "/images/folder.png",
+    type: "folder",
+    path: "C:\\Users\\User\\Pictures",
+    createdAt: new Date(),
+  },
+  {
+    id: "recycle-bin",
+    name: "Recycle Bin",
+    icon: "/images/recycle-bin.png",
+    type: "recyclebin",
+    path: "Recycle Bin",
+    createdAt: new Date(),
+  },
+  {
+    id: "chrome",
+    name: "Google Chrome",
+    icon: "/images/chrome.png",
+    type: "file",
+    createdAt: new Date(),
+  },
+  {
+    id: "vscode",
+    name: "Visual Studio Code",
+    icon: "/images/vs.png",
+    type: "file",
+    createdAt: new Date(),
+  },
+  {
+    id: "word",
+    name: "Microsoft Word",
+    icon: "/images/word.png",
+    type: "file",
+    createdAt: new Date(),
+  },
+  {
+    id: "image1",
+    name: "Vacation.jpg",
+    icon: "/images/image-icon.png",
+    type: "image",
+    createdAt: new Date(),
+  },
+  {
+    id: "image2",
+    name: "Profile.png",
+    icon: "/images/image-icon.png",
+    type: "image",
+    createdAt: new Date(),
+  },
+  {
+    id: "image3",
+    name: "Document.pdf",
+    icon: "/images/pdf-icon.png",
+    type: "file",
+    createdAt: new Date(),
+  },
+];
 
 export default function Desktop() {
   const [isStartMenuOpen, setIsStartMenuOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [openApp, setOpenApp] = useState<{
-    name: string;
-    isMaximized: boolean;
-  } | null>(null);
+  const [openApp, setOpenApp] = useState<string | null>(null);
+  const [desktopItems, setDesktopItems] = useState<DesktopItem[]>(defaultItems);
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [contextMenu, setContextMenu] = useState<{
     x: number;
     y: number;
   } | null>(null);
-  const [folders, setFolders] = useState<DesktopFolder[]>([]);
-  const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
-  const [openSettings, setOpenSettings] = useState(false);
-  const [backgroundImage, setBackgroundImage] = useState("/images/desk.jpg");
+  const [currentPath, setCurrentPath] = useState<string | null>(null);
+  const [isMaximized, setIsMaximized] = useState(false);
+  const [openImage, setOpenImage] = useState<string | null>(null);
   const logout = useAuthStore((state) => state.logout);
 
   useEffect(() => {
@@ -44,110 +119,29 @@ export default function Desktop() {
     return () => clearInterval(timer);
   }, []);
 
-  useEffect(() => {
-    const handleClickOutside = () => {
-      setContextMenu(null);
-      setEditingFolderId(null);
-    };
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setContextMenu(null);
-        setEditingFolderId(null);
-      }
-    };
-
-    window.addEventListener("click", handleClickOutside);
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.removeEventListener("click", handleClickOutside);
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, []);
-
-  const handleContextMenu = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setContextMenu({ x: e.clientX, y: e.clientY });
-  };
-
-  const createNewFolder = () => {
-    const newFolder: DesktopFolder = {
-      id: Date.now().toString(),
-      name: "New Folder",
-      createdAt: new Date(),
-    };
-    setFolders([...folders, newFolder]);
-    setEditingFolderId(newFolder.id);
-    setContextMenu(null);
-  };
-
-  const handleFolderNameChange = (id: string, newName: string) => {
-    setFolders(
-      folders.map((folder) =>
-        folder.id === id ? { ...folder, name: newName } : folder
-      )
-    );
-    setEditingFolderId(null);
-  };
-
-  const handleMaximize = () => {
-    if (openApp) {
-      setOpenApp({ ...openApp, isMaximized: true });
-    }
-  };
-
-  const handleMinimize = () => {
-    if (openApp) {
-      setOpenApp({ ...openApp, isMaximized: false });
-    }
-  };
-
-  const handleRefresh = () => {
-    window.location.reload();
-  };
-
-  const handlePersonalize = () => {
-    setOpenSettings(true);
-    setContextMenu(null);
-  };
-
-  const handleChangeBackground = (imagePath: string) => {
-    setBackgroundImage(imagePath);
-  };
-
-  const taskbarimages = [
+  const taskbarIcons = [
     { name: "Search", icon: <Search className="w-5 h-5" />, action: () => {} },
     {
       name: "File Explorer",
       icon: "/images/file-explorer.png",
-      action: () => handleOpenApp("File Explorer"),
+      action: () => setOpenApp("fileManager"),
     },
     {
       name: "Chrome",
       icon: "/images/chrome.png",
-      action: () => handleOpenApp("Chrome"),
+      action: () => setOpenApp("chrome"),
     },
     {
       name: "VS Code",
-      icon: "/images/vscode.png",
-      action: () => handleOpenApp("VS Code"),
-    },
-    {
-      name: "Calculator",
-      icon: "/images/calculator.png",
-      action: () => handleOpenApp("Calculator"),
+      icon: "/images/vs.png",
+      action: () => setOpenApp("vscode"),
     },
     {
       name: "Word",
       icon: "/images/word.png",
-      action: () => handleOpenApp("Word"),
+      action: () => setOpenApp("word"),
     },
-    {
-      name: "Settings",
-      icon: "/images/settings.png",
-      action: () => handleOpenApp("Settings"),
-    },
+    { name: "Settings", icon: "/images/settings.png", action: () => {} },
   ];
 
   const handleStartClick = () => {
@@ -161,42 +155,88 @@ export default function Desktop() {
   };
 
   const handleOpenApp = (appName: string) => {
-    switch (appName.toLowerCase()) {
-      case "file explorer":
-        setOpenApp({ name: "fileManager", isMaximized: false });
+    setOpenApp(appName.toLowerCase());
+    setIsStartMenuOpen(false);
+  };
+
+  const handleItemNameChange = (itemId: string, newName: string) => {
+    const updatedItems = desktopItems.map((item) =>
+      item.id === itemId ? { ...item, name: newName } : item
+    );
+    setDesktopItems(updatedItems);
+  };
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setContextMenu({ x: e.clientX, y: e.clientY });
+  };
+
+  const closeContextMenu = () => {
+    setContextMenu(null);
+  };
+
+  const createNewFolder = () => {
+    const newFolder: DesktopItem = {
+      id: `folder-${Date.now()}`,
+      name: "New Folder",
+      icon: "/images/folder.png",
+      type: "folder",
+      createdAt: new Date(),
+    };
+    setDesktopItems([...desktopItems, newFolder]);
+    setEditingItemId(newFolder.id);
+    closeContextMenu();
+  };
+
+  const handleItemClick = (item: DesktopItem) => {
+    switch (item.type) {
+      case "folder":
+      case "recyclebin":
+        setOpenApp("fileManager");
+        setCurrentPath(item.path || null);
         break;
-      case "chrome":
-        setOpenApp({ name: "chrome", isMaximized: false });
+      case "file":
+        handleOpenApp(item.name);
         break;
-      case "vs code":
-        setOpenApp({ name: "vscode", isMaximized: false });
-        break;
-      case "calculator":
-        setOpenApp({ name: "calculator", isMaximized: false });
-        break;
-      case "word":
-        setOpenApp({ name: "word", isMaximized: false });
-        break;
-      case "settings":
-        setOpenApp({ name: "settings", isMaximized: false });
+      case "image":
+        setOpenImage(item.name);
         break;
       default:
-        console.log(`Opening ${appName}`);
+        break;
     }
   };
+
+  // Calculate columns based on screen height
+  const itemsPerColumn = Math.floor((window.innerHeight - 100) / 100); // 100px per item
+  // @ts-ignore
+  const columns: any[] = [];
+  // @ts-ignore
+  let currentColumn = [];
+
+  desktopItems.forEach((item, index) => {
+    currentColumn.push(item);
+    if (
+      currentColumn.length === itemsPerColumn ||
+      index === desktopItems.length - 1
+    ) {
+      // @ts-ignore
+      columns.push([...currentColumn]);
+      currentColumn = [];
+    }
+  });
 
   return (
     <div
       className="h-screen w-screen overflow-hidden relative"
       onClick={() => {
         setIsStartMenuOpen(false);
-        setContextMenu(null);
+        closeContextMenu();
       }}
       onContextMenu={handleContextMenu}
     >
       {/* Desktop Background */}
       <Image
-        src={backgroundImage}
+        src="/images/desk.jpg"
         alt="Desktop Background"
         layout="fill"
         objectFit="cover"
@@ -204,39 +244,55 @@ export default function Desktop() {
       />
 
       {/* Desktop Content */}
-      <div className="absolute inset-0 p-4 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4 overflow-auto">
-        {folders.map((folder) => (
-          <div
-            key={folder.id}
-            className="flex flex-col items-center gap-2 p-2 hover:bg-white/10 rounded cursor-pointer group"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <img
-              src="/images/folder.png"
-              alt="Folder"
-              className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12"
-            />
-            {editingFolderId === folder.id ? (
-              <input
-                type="text"
-                value={folder.name}
-                className="bg-black/50 text-white px-2 py-1 rounded w-full text-center text-xs sm:text-sm"
-                onChange={(e) =>
-                  handleFolderNameChange(folder.id, e.target.value)
-                }
-                onBlur={() => setEditingFolderId(null)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    handleFolderNameChange(folder.id, e.currentTarget.value);
-                  }
+      <div className="absolute inset-0 p-4 flex gap-4">
+        {columns.map((column, columnIndex) => (
+          <div key={columnIndex} className="flex flex-col gap-4">
+            {column.map((item: any) => (
+              <div
+                key={item.id}
+                className="flex flex-col items-center justify-center w-24 h-24 p-2 hover:bg-white/10 rounded cursor-pointer group"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleItemClick(item);
                 }}
-                autoFocus
-              />
-            ) : (
-              <span className="text-xs sm:text-sm text-white text-center px-2 py-1 rounded group-hover:bg-blue-500/30">
-                {folder.name}
-              </span>
-            )}
+              >
+                <Image
+                  src={item.icon}
+                  alt={item.name}
+                  width={48}
+                  height={48}
+                  className="h-12 w-12 mb-2"
+                />
+                {editingItemId === item.id ? (
+                  <input
+                    type="text"
+                    value={item.name}
+                    className="bg-black/50 text-white px-2 py-1 rounded w-full text-center text-xs"
+                    onChange={(e) =>
+                      handleItemNameChange(item.id, e.target.value)
+                    }
+                    onBlur={() => setEditingItemId(null)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        handleItemNameChange(item.id, e.currentTarget.value);
+                        setEditingItemId(null);
+                      }
+                    }}
+                    autoFocus
+                  />
+                ) : (
+                  <span
+                    className="text-xs text-white text-center px-2 py-1 rounded group-hover:bg-blue-500/30 w-full truncate"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditingItemId(item.id);
+                    }}
+                  >
+                    {item.name}
+                  </span>
+                )}
+              </div>
+            ))}
           </div>
         ))}
       </div>
@@ -246,64 +302,68 @@ export default function Desktop() {
         <ContextMenu
           x={contextMenu.x}
           y={contextMenu.y}
-          onClose={() => setContextMenu(null)}
+          onClose={closeContextMenu}
           onCreateFolder={createNewFolder}
-          onRefresh={handleRefresh}
-          onPersonalize={handlePersonalize}
+          onRefresh={() => {}}
+          onPersonalize={() => {}}
         />
       )}
 
       {/* Open Applications */}
-      {openApp?.name === "fileManager" && (
+      {openApp === "filemanager" && (
         <FileManager
-          onClose={() => setOpenApp(null)}
-          isMaximized={openApp.isMaximized}
-          onMaximize={handleMaximize}
-          onMinimize={handleMinimize}
+          onClose={() => {
+            setOpenApp(null);
+            setCurrentPath(null);
+          }}
+          isMaximized={isMaximized}
+          onMaximize={() => setIsMaximized(!isMaximized)}
+          onMinimize={() => {}}
+          initialPath={currentPath}
+          isRecycleBin={currentPath === "Recycle Bin"}
         />
       )}
-      {openApp?.name === "chrome" && (
+      {openApp === "chrome" && (
         <Chrome
           onClose={() => setOpenApp(null)}
-          isMaximized={openApp.isMaximized}
-          onMaximize={handleMaximize}
-          onMinimize={handleMinimize}
+          isMaximized={isMaximized}
+          onMaximize={() => setIsMaximized(!isMaximized)}
+          onMinimize={() => {}}
         />
       )}
-      {openApp?.name === "vscode" && (
+      {openApp === "vscode" && (
         <VSCode
           onClose={() => setOpenApp(null)}
-          isMaximized={openApp.isMaximized}
-          onMaximize={handleMaximize}
-          onMinimize={handleMinimize}
+          isMaximized={isMaximized}
+          onMaximize={() => setIsMaximized(!isMaximized)}
+          onMinimize={() => {}}
         />
       )}
-      {openApp?.name === "calculator" && (
-        <Calculator
-          onClose={() => setOpenApp(null)}
-          isMaximized={openApp.isMaximized}
-          onMaximize={handleMaximize}
-          onMinimize={handleMinimize}
-        />
-      )}
-      {openApp?.name === "word" && (
+      {openApp === "word" && (
         <Word
           onClose={() => setOpenApp(null)}
-          isMaximized={openApp.isMaximized}
-          onMaximize={handleMaximize}
-          onMinimize={handleMinimize}
+          isMaximized={isMaximized}
+          onMaximize={() => setIsMaximized(!isMaximized)}
+          onMinimize={() => {}}
         />
       )}
 
-      {/* Personalization Settings */}
-      {openSettings && (
-        <PersonalizationSettings
-          onClose={() => setOpenSettings(false)}
-          isMaximized={false}
-          onMaximize={() => {}}
-          onMinimize={() => {}}
-          onChangeBackground={handleChangeBackground}
-        />
+      {/* Image Viewer */}
+      {openImage && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+          onClick={() => setOpenImage(null)}
+        >
+          <div className="bg-white p-4 rounded-lg">
+            <Image
+              src={`/images/${openImage}`}
+              alt={openImage}
+              width={800}
+              height={600}
+              objectFit="contain"
+            />
+          </div>
+        </div>
       )}
 
       {/* Start Menu */}
@@ -315,30 +375,30 @@ export default function Desktop() {
       )}
 
       {/* Taskbar */}
-      <div className="absolute bottom-0 left-0 right-0 h-10 sm:h-12 bg-black/70 backdrop-blur-lg flex items-center justify-center px-2 text-white">
+      <div className="absolute bottom-0 left-0 right-0 h-12 bg-black/70 backdrop-blur-lg flex items-center justify-center px-2 text-white">
         <button
           onClick={(e) => {
             e.stopPropagation();
             handleStartClick();
           }}
-          className="p-1 sm:p-2 hover:bg-white/10 rounded-md transition-colors"
+          className="p-2 hover:bg-white/10 rounded-md transition-colors"
         >
-          <Image src="/images/windows.png" alt="Start" width={20} height={20} />
+          <Image src="/images/windows.png" alt="Start" width={24} height={24} />
         </button>
 
         {/* Task bar icons */}
         <div className="flex items-center space-x-1 ml-2">
-          {taskbarimages.map((icon) => (
+          {taskbarIcons.map((icon) => (
             <button
               key={icon.name}
               onClick={(e) => {
                 e.stopPropagation();
                 handleTaskbarIconClick(icon.action);
               }}
-              className="p-1 sm:p-2 hover:bg-white/10 rounded-md transition-colors"
+              className="p-2 hover:bg-white/10 rounded-md transition-colors"
             >
               {typeof icon.icon === "string" ? (
-                <Image src={icon.icon} alt={icon.name} width={16} height={16} />
+                <Image src={icon.icon} alt={icon.name} width={20} height={20} />
               ) : (
                 icon.icon
               )}
@@ -348,19 +408,19 @@ export default function Desktop() {
 
         {/* System Tray */}
         <div className="absolute right-2 flex items-center space-x-2">
-          <Button variant="ghost" size="icon" className="h-6 w-6 sm:h-8 sm:w-8">
-            <ChevronUp className="w-3 h-3 sm:w-4 sm:h-4" />
-          </Button>
-          <Button variant="ghost" size="icon" className="h-6 w-6 sm:h-8 sm:w-8">
-            <Wifi className="w-3 h-3 sm:w-4 sm:h-4" />
-          </Button>
-          <Button variant="ghost" size="icon" className="h-6 w-6 sm:h-8 sm:w-8">
-            <Volume2 className="w-3 h-3 sm:w-4 sm:h-4" />
-          </Button>
-          <Button variant="ghost" size="icon" className="h-6 w-6 sm:h-8 sm:w-8">
-            <Battery className="w-3 h-3 sm:w-4 sm:h-4" />
-          </Button>
-          <div className="px-2 py-1 hover:bg-white/10 rounded-md text-xs">
+          <button className="p-2 hover:bg-white/10 rounded-md">
+            <ChevronUp className="w-4 h-4" />
+          </button>
+          <button className="p-2 hover:bg-white/10 rounded-md">
+            <Wifi className="w-4 h-4" />
+          </button>
+          <button className="p-2 hover:bg-white/10 rounded-md">
+            <Volume2 className="w-4 h-4" />
+          </button>
+          <button className="p-2 hover:bg-white/10 rounded-md">
+            <Battery className="w-4 h-4" />
+          </button>
+          <div className="px-3 py-1 hover:bg-white/10 rounded-md text-xs">
             <div>
               {currentTime.toLocaleTimeString("en-US", {
                 hour: "numeric",
@@ -368,7 +428,7 @@ export default function Desktop() {
                 hour12: true,
               })}
             </div>
-            <div className="hidden sm:block">
+            <div>
               {currentTime.toLocaleDateString("en-US", {
                 month: "numeric",
                 day: "numeric",

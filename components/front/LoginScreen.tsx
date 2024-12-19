@@ -2,15 +2,10 @@
 
 import { useState } from "react";
 
+import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Fingerprint, Key, Grid3X3, SmilePlus, Lock } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
-
-interface User {
-  id: string;
-  username: string;
-  email: string;
-}
 
 export default function LoginScreen() {
   const [password, setPassword] = useState("");
